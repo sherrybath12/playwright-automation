@@ -1,0 +1,33 @@
+version: 2.1
+
+parameters:
+  ENV:
+    type: string
+    default: dev
+
+executors:
+  playwright:
+    docker:
+      - image: mcr.microsoft.com/playwright:v1.45.0-jammy
+    environment:
+      CI: "true"
+
+jobs:
+  run-tests:
+    executor: playwright
+    steps:
+      - checkout
+      - run: npm ci
+      - run:
+          name: Run << pipeline.parameters.ENV >> tests
+          command: ENV=<< pipeline.parameters.ENV >> npx playwright test --grep @<< pipeline.parameters.ENV >>
+      - store_test_results:
+          path: test-results
+      - store_artifacts:
+          path: playwright-report
+          destination: playwright-report-<< pipeline.parameters.ENV >>
+
+workflows:
+  run-tests:
+    jobs:
+      - run-tests
