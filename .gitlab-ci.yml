@@ -1,0 +1,23 @@
+variables:
+  ENV:
+    value: "dev"
+    description: "Environment to run tests against (dev, staging, prod)"
+
+stages:
+  - test
+
+run-tests:
+  stage: test
+  image: mcr.microsoft.com/playwright:v1.61.0-jammy
+  variables:
+    CI: "true"
+  script:
+    - npm ci
+    - ENV=$ENV npx playwright test --grep @$ENV
+  artifacts:
+    when: always
+    paths:
+      - playwright-report/
+      - test-results/
+    reports:
+      junit: test-results/results.xml
